@@ -1,0 +1,9 @@
+<launch>
+
+        <arg name="camera_config" value="AR0135_1280x964_8bit_C.yaml" /> <!-- Config file in camera_config_files folder of your camera. -->
+        <arg name="serial_number" value="" /> <!-- Serial number of the camera in the form of "XXXX-XXXX-XXXX", leave it blank "" if there is only one camera. -->
+        <arg name="frame_id" value="camera_frame" /> <!--Topic frame_id. -->
+
+        <node name="arducam_ros_cpp_node" pkg="arducam_ros_cpp" type="arducam_ros_cpp_node" output="screen" args="$(find arducam_ros_cpp)/cpp_config/$(arg camera_config)" />
+
+</launch>

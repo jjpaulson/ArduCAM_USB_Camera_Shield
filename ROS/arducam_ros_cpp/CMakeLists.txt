@@ -141,7 +141,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
-  src/arducam_usb2_ros/src/Arducam_SDK/
+  src/Arducam_SDK/
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )

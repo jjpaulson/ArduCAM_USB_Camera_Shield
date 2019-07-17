@@ -567,7 +567,6 @@ void readImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
 
 int main(int argc,char **argv)
 {
-#ifdef linux
 	static struct termios oldt, newt;
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
@@ -575,7 +574,6 @@ int main(int argc,char **argv)
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 	ros::init(argc, argv, "arducam_ros_cpp_node");
 	ros::NodeHandle nh;
-#endif
 	ArduCamHandle cameraHandle;
 
 	const char * config_file_name;
@@ -600,9 +598,7 @@ int main(int argc,char **argv)
 			u8TmpData[8], u8TmpData[9], u8TmpData[10], u8TmpData[11]);
         printf("index:%4d\tSerial:%s\n",pUsbIdxArray[i].u8UsbIndex,serial);
     }
-#ifdef linux
 	sleep(2);
-#endif
 
 	//read config file and open the camera.
 	if (camera_initFromFile(config_file_name, cameraHandle, cameraCfg)) {
@@ -612,12 +608,7 @@ int main(int argc,char **argv)
 		std::cout << "capture thread create successfully." << std::endl;
 		std::cout << "read thread create successfully." << std::endl;
 		int key = -1;
-#ifdef linux
 		while((key = getchar()) != -1){
-#endif
-#ifdef _WIN32
-        while((key = _getch()) != -1){
-#endif
 			if(key == 'q' || key == 'Q'){
 				break;
 			}
@@ -644,10 +635,8 @@ int main(int argc,char **argv)
 	std::cout << std::endl << "Press ENTER to exit..." << std::endl;
 	std::string key;
 	std::getline(std::cin,key);
-#ifdef linux
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
-#endif
 	return 0;
 }
 

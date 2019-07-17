@@ -18,4 +18,4 @@ clean:
 .PHONY:install-sdk
 
 install-sdk:
-	sudo cp -d $(LDIR)/lib*.so* /usr/lib
+	cp -d $(LDIR)/lib*.so* /usr/lib

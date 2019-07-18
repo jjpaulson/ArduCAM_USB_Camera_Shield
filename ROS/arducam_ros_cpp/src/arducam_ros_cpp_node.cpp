@@ -464,10 +464,10 @@ void readImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
 	//ros::Subscriber trigger_count_sub = nh->subscribe("/trigger_counter", 1, &trigger::trigger_count_callback, &trig_obj);
 	//}
 
-	const string camurl = "file:///home/jp32021/camera_calib_files/ar0135/camera_info.yaml";
-	camera_info_manager::CameraInfoManager caminfo(*nh, "camera", camurl);
-	sensor_msgs::CameraInfo ci;
-	ci = caminfo.getCameraInfo();
+	//const string camurl = "file:///home/jp32021/camera_calib_files/ar0135/camera_info.yaml";
+	//camera_info_manager::CameraInfoManager caminfo(*nh, "camera", camurl);
+	//sensor_msgs::CameraInfo ci;
+	//ci = caminfo.getCameraInfo();
 
 #ifdef linux
 	if(access(save_path, F_OK) != 0){  

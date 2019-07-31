@@ -377,6 +377,11 @@ bool camera_initFromFile(std::string filename, ArduCamHandle &cameraHandle, Ardu
 	}
 }
 
+/*
+	Following trigger class and callbacks can be used if using the camera with a hardware trigger.
+	General design for the trigger is to have trigger topics that are subscribed to in the capture/read threads.
+	These topics should be published to by whatever device you are having raise the trigger.
+*/
 class trigger {
 	public:
 		ros::Time trigger_time_val;
@@ -400,13 +405,6 @@ void trigger::trigger_callback(const std_msgs::BoolConstPtr& trigger) {
 }
 
 void captureImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
-	//Uint32 rtn_val = ArduCam_flush(handle);
-	//int trigger_flag = 1;
-
-	//trigger trig_obj2;
-
-	//ros::Subscriber trigger_sub = nh->subscribe("/trigger", 1, &trigger::trigger_callback, &trig_obj2);
-
 	Uint32 rtn_val = ArduCam_beginCaptureImage(handle);
 	if ( rtn_val == USB_CAMERA_USB_TASK_ERROR) {
 		std::cout << "Error beginning capture, rtn_val = " << rtn_val << std::endl;
@@ -417,9 +415,6 @@ void captureImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
 	}
 
 	while (_running) {
-		//ros::spinOnce();
-
-		//if(trig_obj2.trigger_val) {
 		rtn_val = ArduCam_captureImage(handle);
 		if ( rtn_val == USB_CAMERA_USB_TASK_ERROR) {
 			std::cout << "Error capture image, rtn_val = " << rtn_val << std::endl;
@@ -428,24 +423,17 @@ void captureImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
 			std::cout << "Register x3030 = " << *pval << std::endl;
 			break;
 		}else if(rtn_val > 0xFF){
-			//if ( trigger_flag == 1)
-			//	continue;
 		    std::cout << "Error capture image, rtn_val = " << rtn_val << std::endl;
-			//rtn_val = ArduCam_del(handle);
-			//std::cout << "Cleared last image in image buffer, rtn_val = " << rtn_val << std::endl;
 		}
-		//}
 	}
     _running = false;
 	ArduCam_endCaptureImage(handle);
 	std::cout << "Capture thread stopped." << std::endl;
 }
 
-void readImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
+void readImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {	
 	ArduCamOutData* frameData;
 	//cv::namedWindow("ArduCam", cv::WINDOW_AUTOSIZE);
-	//int trigger_flag = 1;
-	//ros::NodeHandle nh;
 	long beginTime = time(NULL);
 	int frame_count = 0;
 	long total_frame = 0;
@@ -456,18 +444,6 @@ void readImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
 
 	image_transport::ImageTransport it(*nh);
 	image_transport::Publisher pub = it.advertise("camera/image_raw", 1);
-	//ros::Publisher pub_cam_info = nh->advertise<sensor_msgs::CameraInfo>("camera/camera_info", 1);
-    
-	//trigger trig_obj;
-	//if(trigger_flag) {
-	//ros::Subscriber trigger_time_sub = nh->subscribe("/trigger_time", 1, &trigger::trigger_time_callback, &trig_obj);
-	//ros::Subscriber trigger_count_sub = nh->subscribe("/trigger_counter", 1, &trigger::trigger_count_callback, &trig_obj);
-	//}
-
-	//const string camurl = "file:///home/jp32021/camera_calib_files/ar0135/camera_info.yaml";
-	//camera_info_manager::CameraInfoManager caminfo(*nh, "camera", camurl);
-	//sensor_msgs::CameraInfo ci;
-	//ci = caminfo.getCameraInfo();
 
 #ifdef linux
 	if(access(save_path, F_OK) != 0){  
@@ -485,7 +461,6 @@ void readImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
 
 	Uint32 seq = 0;
 	while (_running && ros::ok()) {
-        //ros::spinOnce();
 
 		if (ArduCam_availableImage(handle) > 0) {
 			Uint32 rtn_val = ArduCam_readImage(handle, frameData);
@@ -523,21 +498,15 @@ void readImage_thread(ArduCamHandle handle, ros::NodeHandle * nh) {
     				}
 					total_frame++;
 				}
+				//UNCOMMENT TO RESIZE IMAGE TO 640x480 RESOLUTION
 				//cv::resize(rawImage, rawImage, cv::Size(640, 480), 0.5, 0.5, cv::INTER_AREA);
+
 				cv_ptr->image = rawImage;
 				cv_ptr->encoding = "bgr8";
 				cv_ptr->header.seq = seq;
 				cv_ptr->header.stamp = ros::Time::now();
 				cv_ptr->header.frame_id = "camera_frame";
-				//if(trigger_flag) {
-                    //ros::spinOnce();
-				    //cv_ptr->header.stamp = trig_obj.trigger_time_val + ros::Duration(0.025188917);
-				    //cv_ptr->header.seq = trig_obj.trigger_count_val;
-				//}
-				
-				//ci.header.stamp = cv_ptr->header.stamp;
 
-				//pub_cam_info.publish(ci);
 				pub.publish(cv_ptr->toImageMsg());
 
 				//cv::resize(rawImage, rawImage, cv::Size(640, 480), (0, 0), (0, 0), cv::INTER_LINEAR);
